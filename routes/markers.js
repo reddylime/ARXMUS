@@ -1,7 +1,8 @@
 const Router = require('koa-router');
 
 const markerController = require('../controller/marker');
-const { recvFiles } = require('../helper/helper');
+const { storeFiles } = require('../helper/helper');
+const {EntityNotFound} = require('../errors');
 
 const markers = new Router({
   prefix: '/markers',
@@ -21,14 +22,21 @@ markers.get('/:id', () => {
 
 markers.put('/:id', async (ctx) => {
   
-  const URIs = recvFiles(['marker', 'patt'], ctx.request.files);
+  try {
+    const URIs = storeFiles(['marker', 'patt'], ctx.request.files);
 
-  markerOpts = {
-    picUri: URIs.marker,
-    pattUri: URIs.patt
+    markerOpts = {
+      picUri: URIs.marker,
+      pattUri: URIs.patt
+    }
+
+  await markerController.updateMarker(ctx.request.body.markerId, markerOpts);
+  ctx.status = 204;
+  }catch(err) {
+    if (err instanceof EntityNotFound) {
+      ctx.body = err.message;
+    }
   }
-
-  ctx.body = await markerController.updateMarker(ctx.request.body.markerId, markerOpts);
 
 });
 
