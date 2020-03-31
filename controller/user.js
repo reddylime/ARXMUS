@@ -1,7 +1,7 @@
 const path = require('path');
 const basename = path.basename(__filename);
 
-const models = require('../models');
+const {models} =require('../models');
 const {EntityExistsErr} = require('../errors');
 const {EntityNotFound} = require('../errors');
 

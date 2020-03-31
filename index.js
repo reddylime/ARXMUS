@@ -5,6 +5,8 @@ const bodyClean = require('koa-body-clean');
 const router = require('./routes');
 const db = require('./models');
 
+db.init();
+
 const app = new Koa();
 
 app.use(koaBody({multipart: true}));

@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 
-const models = require('../models');
+const {models} =require('../models');
 const {EntityNotFound} = require('../errors');
 
 const basename = path.basename(__filename);
@@ -42,20 +42,18 @@ const deleteTDO = async (tdoId) => {
 };
 
 const updateTDO = async (tdoId, tdoOpts) => {
-
   const exist = await models.ThreeDimObj.findByPk(tdoId);
   if (!exist) throw new EntityNotFound(entityName);
   return models.ThreeDimObj.update(tdoOpts, {
     where: {
-      id: tdoId
-    }
+      id: tdoId,
+    },
   });
-
-}
+};
 
 module.exports = {
   createTDO,
   getTDOs,
   deleteTDO,
-  updateTDO
+  updateTDO,
 };
