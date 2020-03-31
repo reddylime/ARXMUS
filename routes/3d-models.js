@@ -1,11 +1,8 @@
-const fs = require('fs');
-const path = require('path');
-
 const Router = require('koa-router');
 
 const tdoController = require('../controller/3d-model');
 const {EntityNotFound} = require('../errors');
-const { storeFiles } = require('../helper/helper');
+const {storeFiles} = require('../helper/helper');
 const {getCurUserMock} = require('../test/mocks/');
 
 const models = new Router({
@@ -21,7 +18,7 @@ models.get('/', async (ctx) => {
 
 models.post('/', async (ctx) => {
   const URIs = storeFiles(['tdo', 'marker', 'patt'], ctx.request.files);
-  
+
   const tdoOpts = {
     name: ctx.request.body.name,
     uri: URIs.tdo,
@@ -43,7 +40,7 @@ models.put('/:id', async (ctx) => {
   try {
     await tdoController.updateTDO(ctx.params.id, ctx.request.body);
     ctx.status = 204;
-  }catch(err) {
+  } catch (err) {
     if (err instanceof EntityNotFound) {
       ctx.status = 404;
       ctx.body = Jerr.message;

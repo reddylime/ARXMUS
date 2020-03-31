@@ -1,9 +1,9 @@
 const getCurUserMock = () => {
-    return {
-      id: 1,
-    };
+  return {
+    id: 1,
   };
+};
 
-  module.exports = {
-      getCurUserMock
-  }
+module.exports = {
+  getCurUserMock,
+};
