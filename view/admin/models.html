@@ -1,0 +1,44 @@
+<html>
+
+<head>
+  <% include deps.html %>
+</head>
+
+<body>
+
+    <% include navbar.html %>
+
+    <div class="container">
+      <div>
+        <a href="./models/new" class="btn btn-primary btn-lg active" role="button" aria-pressed="true">Add model</a>
+      </div>
+    </div>
+    
+
+    <table class="table table-dark">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+            <th scope="col">URI</th>
+            <th scope="col">Group</th>
+            <th scope="col">Edit</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+            <% threeDimObjs.forEach(function(threeDimObj){ %>
+                <%- include('tdo-row.html', {threeDimObj}); %>
+            <% }); %>
+
+        </tbody>
+
+      </table>
+
+    <script src="http://127.0.0.1:3000/storage/assets/js/three.js"></script>
+    <script src="http://127.0.0.1:3000/storage/assets/js/GLTFLoader.js"></script>
+
+</body>
+
+</html>
