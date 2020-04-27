@@ -22,6 +22,7 @@ models.post('/', async (ctx) => {
   const tdoOpts = {
     name: ctx.request.body.name,
     uri: URIs.tdo,
+    group: ctx.request.body.group,
     Marker: {
       picUri: URIs.marker,
       pattUri: URIs.patt,
@@ -33,17 +34,29 @@ models.post('/', async (ctx) => {
 });
 
 models.get('/:id', () => {
-  console.log('GET /models/id handler not yet implemented');
+  /* ctx.body = await tdoController.getTDObyId(ctx.body) */
 });
 
 models.put('/:id', async (ctx) => {
+  const URIs = storeFiles(['tdo', 'marker', 'patt'], ctx.request.files);
+
+  const tdoOpts = {
+    name: ctx.request.body.name,
+    uri: URIs.tdo,
+    group: ctx.request.body.group,
+    Marker: {
+      picUri: URIs.marker,
+      pattUri: URIs.patt,
+    },
+  };
+
   try {
-    await tdoController.updateTDO(ctx.params.id, ctx.request.body);
+    await tdoController.updateTDO(ctx.params.id, tdoOpts);
     ctx.status = 204;
   } catch (err) {
     if (err instanceof EntityNotFound) {
       ctx.status = 404;
-      ctx.body = Jerr.message;
+      ctx.body = err.message;
     }
   }
 });

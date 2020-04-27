@@ -27,12 +27,37 @@ const getTDOs = async (userId, limit = 5, offset = 0) => {
   });
 };
 
+const getTDOsByGroup = async (userId, group) => {
+  return models.ThreeDimObj.findAll({
+    include: [{
+      model: models.Marker,
+    }],
+    where: {
+      userId,
+      group,
+    },
+  });
+};
+
 const deleteTDO = async (tdoId) => {
-  const exist = await models.ThreeDimObj.findByPk(tdoId);
+  const exist = await models.ThreeDimObj.findByPk(tdoId, {
+    include: [{
+      model: models.Marker,
+    }],
+  });
   if (!exist) throw new EntityNotFound(entityName);
 
   const tdoURI = exist.uri;
-  fs.unlinkSync(tdoURI);
+  const markerUri = exist.Marker.picUri;
+  const pattUri = exist.Marker.pattUri;
+
+  try {
+    fs.unlinkSync(tdoURI);
+    fs.unlinkSync(markerUri);
+    fs.unlinkSync(pattUri);
+  } catch (err) {
+    throw new Error('CANT UNLINK MODELS');
+  }
 
   return models.ThreeDimObj.destroy({
     where: {
@@ -42,12 +67,26 @@ const deleteTDO = async (tdoId) => {
 };
 
 const updateTDO = async (tdoId, tdoOpts) => {
-  const exist = await models.ThreeDimObj.findByPk(tdoId);
+  const exist = await models.ThreeDimObj.findByPk(tdoId, {
+    include: [{
+      model: models.Marker,
+    }],
+  });
   if (!exist) throw new EntityNotFound(entityName);
-  return models.ThreeDimObj.update(tdoOpts, {
+  await models.ThreeDimObj.update(tdoOpts, {
     where: {
       id: tdoId,
     },
+  });
+
+  await exist.Marker.update(tdoOpts.Marker);
+};
+
+getTDObyId = async (tdoId) => {
+  return models.ThreeDimObj.findByPk(tdoId, {
+    include: [{
+      model: models.Marker,
+    }],
   });
 };
 
@@ -56,4 +95,6 @@ module.exports = {
   getTDOs,
   deleteTDO,
   updateTDO,
+  getTDOsByGroup,
+  getTDObyId,
 };

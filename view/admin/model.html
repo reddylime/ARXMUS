@@ -1,0 +1,233 @@
+<html>
+
+<head>
+  <% include deps.html %>
+</head>
+
+<body>
+
+  <% include navbar.html %>
+
+  <div class="container">
+
+    <div class="card-deck mb-3 text-center">
+
+      <div class="card" style="width: 18rem;">
+        <div class="card-header">
+          Model
+        </div>
+        <div class="m-3">
+          <canvas id="myCanvas"></canvas>
+        </div>
+        <div class="card-body">
+
+          <form id="modelForm">
+
+            <div class="input-group mb-3">
+              <div class="custom-file">
+                <input type="file" class="custom-file-input" id="modelInput" onchange="">
+                <label class="custom-file-label" for="modelInput" aria-describedby="modelInput">Update
+                  model</label>
+              </div>
+            </div>
+
+            <input type="submit" value="Update model" onclick="return updateModel();" />
+          </form>
+
+        </div>
+      </div>
+
+      <div class="card" style="width: 18rem;">
+        <div class="card-header">
+          Marker
+        </div>
+        <div class="m-3">
+          <img style="width: 400px; height: 400px;" src="http://localhost:3000/<%= threeDimObj.Marker.picUri %>">
+        </div>
+        <div class="card-body">
+
+          <form id="markerForm">
+
+            <div class="input-group mb-3">
+              <div class="custom-file">
+                <input type="file" class="custom-file-input" id="imgInput" onchange="">
+                <label class="custom-file-label" for="imgInput" aria-describedby="modelInput">Update
+                  marker</label>
+              </div>
+
+              <div class="input-group mb-3">
+                <div class="custom-file">
+                  <input type="file" class="custom-file-input" id="pattInput" onchange="">
+                  <label class="custom-file-label" for="pattInput" aria-describedby="modelInput">Update
+                    pattern file</label>
+                </div>
+              </div>
+
+              <input type="submit" value="Update model" onclick="return updateMarker();" />
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <a href="#" class="btn btn-primary btn-lg active" role="button" aria-pressed="true" onclick="return deleteModel();">Delete model</a>
+
+  <script src="http://127.0.0.1:3000/storage/assets/js/three.js"></script>
+  <script src="http://127.0.0.1:3000/storage/assets/js/GLTFLoader.js"></script>
+
+  <script>
+
+    const HOST = 'http://127.0.0.1:3000';
+    const modelId = '<%= threeDimObj.id %>';
+    const MODELENDPOINT = `${HOST}/models/${modelId}`;
+    const MODELSLISTENDPOINT = "http://127.0.0.1:3000/admin/models";
+
+    async function deleteModel() {
+      event.preventDefault();
+
+      const requestOptions = {
+        method: 'DELETE',
+        redirect: 'follow'
+      };
+
+      try {
+        const res = await fetch(MODELENDPOINT, requestOptions);
+        console.log(res);
+      } catch (err) {
+        console.error(err)
+      }
+
+      window.location.href = MODELSLISTENDPOINT;
+
+    }
+
+    async function updateMarker() {
+
+      event.preventDefault();
+
+      const formData = new FormData();
+      formData.append('marker', document.getElementById('imgInput').files[0]);
+      formData.append('patt', document.getElementById('pattInput').files[0]);
+
+
+      const requestOptions = {
+        method: 'PUT',
+        body: formData,
+        redirect: 'follow'
+      };
+
+      try {
+        const res = await fetch(MODELENDPOINT, requestOptions);
+        console.log(res);
+      } catch (err) {
+        console.error(err)
+      }
+
+      location.reload();
+    }
+
+    async function updateModel() {
+
+      event.preventDefault();
+
+      const formData = new FormData();
+      formData.append('tdo', document.getElementById('modelInput').files[0]);
+
+
+      const requestOptions = {
+        method: 'PUT',
+        body: formData,
+        redirect: 'follow'
+      };
+
+      try {
+        const res = await fetch(MODELENDPOINT, requestOptions);
+        console.log(res);
+      } catch (err) {
+        console.error(err)
+      }
+
+      location.reload();
+
+    }
+
+
+    const CANVAS_SIZE_X = 400;
+    const CANVAS_SIZE_Y = 400;
+
+    var renderer,
+      scene,
+      camera,
+      myCanvas = document.getElementById('myCanvas');
+
+    //RENDERER
+    renderer = new THREE.WebGLRenderer({
+      canvas: myCanvas,
+      antialias: true
+    });
+    renderer.setClearColor(0x000000);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(CANVAS_SIZE_X, CANVAS_SIZE_Y);
+
+    //CAMERA
+    camera = new THREE.PerspectiveCamera(35, 1, 0.1, 1000);
+
+    //SCENE
+    scene = new THREE.Scene();
+
+    //LIGHTS
+    var light = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(light);
+
+    var light2 = new THREE.PointLight(0xffffff, 0.5);
+    scene.add(light2);
+
+    var loader = new THREE.GLTFLoader();
+
+    const modelPath = "<%= threeDimObj.uri %>";
+
+    console.log("<%= threeDimObj %>")
+
+    loader.load(`http://127.0.0.1:3000/${"<%= threeDimObj.uri %>"}`, handle_load);
+
+    var mesh;
+
+    function handle_load(gltf) {
+
+      console.log(gltf);
+      mesh = gltf.scene;
+      console.log(mesh.children[0]);
+      mesh.children[0].material = new THREE.MeshLambertMaterial();
+      scene.add(mesh);
+      mesh.position.z = -5;
+
+    }
+
+
+    //RENDER LOOP
+    render();
+
+    var delta = 0;
+    var prevTime = Date.now();
+
+    function render() {
+
+      delta += 0.1;
+
+      if (mesh) {
+
+        mesh.rotation.y += 0.01;
+
+        //animation mesh
+        // mesh.morphTargetInfluences[ 0 ] = Math.sin(delta) * 20.0;
+      }
+
+      renderer.render(scene, camera);
+
+      requestAnimationFrame(render);
+    }
+  </script>
+
+</body>
+
+</html>

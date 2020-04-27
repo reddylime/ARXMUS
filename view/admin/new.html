@@ -1,0 +1,133 @@
+<html>
+
+<head>
+  <% include deps.html %>
+</head>
+
+<body>
+
+  <% include navbar.html %>
+
+  <p class="h1">New model</p>
+
+  <form id="modelForm">
+
+    <div class="row p-2">
+      <div class="col-4">
+        <div class="input-group mb-3">
+          <div class="custom-file">
+            <input type="file" class="custom-file-input" id="modelInput" onchange="return updateFileName();">
+            <label class="custom-file-label" for="modelInput" aria-describedby="modelInput">Choose
+              model</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row p-2">
+      <div class="col-4">
+        <div class="input-group mb-3">
+          <div class="custom-file">
+            <input type="file" class="custom-file-input" id="markerInput" onchange="return updateFileName();">
+            <label class="custom-file-label" for="markerInput" aria-describedby="markerInput">Choose
+              marker</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row p-2">
+      <div class="col-4">
+        <div class="input-group mb-3">
+          <div class="custom-file">
+            <input type="file" class="custom-file-input" id="pattInput" onchange="return updateFileName();">
+            <label class="custom-file-label" for="pattInput" aria-describedby="markerInput" >Choose
+              pattern</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row p-2">
+      <div class="col-4">
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text" id="inputGroup-sizing-default">Name</span>
+          </div>
+          <input type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default"
+            id="nameInput">
+        </div>
+      </div>
+    </div>
+
+    <div class="row p-2">
+      <div class="col-4">
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text" id="inputGroup-sizing-default">Group</span>
+          </div>
+          <input type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default"
+            id="groupInput">
+        </div>
+      </div>
+    </div>
+
+    <input type="submit" value="Submit Model" onclick="return submitModel();" />
+    </div>
+
+  </form>
+
+  <script>
+
+    function updateFileName() {
+      
+
+      const urlSegs = event.currentTarget.value.split('\\');
+      const newLabel = urlSegs[urlSegs.length - 1];
+      console.log(newLabel);
+      event.currentTarget.labels[0].innerText = newLabel;
+      
+    }
+
+    const MODELPOSTENDPOINT = "http://127.0.0.1:3000/models";
+    const MODELSLISTENDPOINT = "http://127.0.0.1:3000/admin/models";
+
+    async function submitModel() {
+
+      event.preventDefault();
+
+      const formData = new FormData();
+      formData.append('tdo', document.getElementById('modelInput').files[0]);
+      formData.append('marker', document.getElementById('markerInput').files[0]);
+      formData.append('patt', document.getElementById('pattInput').files[0]);
+      formData.append("name", document.getElementById("nameInput").value);
+      formData.append("group", document.getElementById("groupInput").value);
+
+      const requestOptions = {
+        method: 'POST',
+        body: formData,
+        redirect: 'follow'
+      };
+
+      try {
+        const res = await fetch(MODELPOSTENDPOINT, requestOptions);
+        console.log(res);
+      } catch(err) {
+        console.error(err)
+      }
+
+      window.location.href = MODELSLISTENDPOINT;
+
+    }
+
+
+
+
+  </script>
+
+  <script src="http://127.0.0.1:3000/storage/assets/js/three.js"></script>
+  <script src="http://127.0.0.1:3000/storage/assets/js/GLTFLoader.js"></script>
+
+</body>
+
+</html>
