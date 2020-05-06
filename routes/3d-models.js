@@ -3,7 +3,7 @@ const Router = require('koa-router');
 const tdoController = require('../controller/3d-model');
 const {EntityNotFound} = require('../errors');
 const {storeFiles} = require('../helper/helper');
-const {getCurUserMock} = require('../test/mocks/');
+const {getCurUserMock} = require('../test/mocks');
 
 const models = new Router({
   prefix: '/models',

@@ -23,7 +23,7 @@ users.post('/', async (ctx) => {
 
 users.get('/:id', async (ctx) => {
   try {
-    ctx.body = await userController.getUser(ctx.params.id);
+    ctx.body = await userController.getUserById(ctx.params.id);
   } catch (err) {
     if (err instanceof EntityNotFound) {
       ctx.status = 404;

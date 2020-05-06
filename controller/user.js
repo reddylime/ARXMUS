@@ -21,8 +21,20 @@ const createUser = async (userOpts) => {
   throw new EntityExistsErr(entityName);
 };
 
-const getUser = async (userId) => {
+const getUserById = async (userId) => {
   const user = await models.User.findByPk(userId);
+
+  if (user) return user;
+
+  throw new EntityNotFound(entityName);
+};
+
+const getUserByUsername = async (username) => {
+  const user = await models.User.findOne({
+    where: {
+      username,
+    },
+  });
 
   if (user) return user;
 
@@ -31,5 +43,6 @@ const getUser = async (userId) => {
 
 module.exports = {
   createUser,
-  getUser,
+  getUserById,
+  getUserByUsername,
 };

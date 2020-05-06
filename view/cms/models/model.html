@@ -1,12 +1,12 @@
 <html>
 
 <head>
-  <% include deps.html %>
+  <% include ../partials/deps.html %>
 </head>
 
 <body>
 
-  <% include navbar.html %>
+  <% include ../partials/navbar.html %>
 
   <div class="container">
 
@@ -24,6 +24,9 @@
           <form id="modelForm">
 
             <div class="input-group mb-3">
+              <div class="input-group-prepend">
+                <span class="input-group-text"><a href="" data-toggle="tooltip" title="Know about 3d models">?</a></span>
+              </div>
               <div class="custom-file">
                 <input type="file" class="custom-file-input" id="modelInput" onchange="">
                 <label class="custom-file-label" for="modelInput" aria-describedby="modelInput">Update
@@ -49,28 +52,36 @@
           <form id="markerForm">
 
             <div class="input-group mb-3">
+              <div class="input-group-prepend">
+                <span class="input-group-text"><a href="" data-toggle="tooltip" title="Know about markers">?</a></span>
+              </div>
               <div class="custom-file">
                 <input type="file" class="custom-file-input" id="imgInput" onchange="">
-                <label class="custom-file-label" for="imgInput" aria-describedby="modelInput">Update
-                  marker</label>
+                <label class="custom-file-label" for="imgInput" aria-describedby="modelInput">Update marker</label>
               </div>
+            </div>
 
-              <div class="input-group mb-3">
-                <div class="custom-file">
-                  <input type="file" class="custom-file-input" id="pattInput" onchange="">
-                  <label class="custom-file-label" for="pattInput" aria-describedby="modelInput">Update
-                    pattern file</label>
-                </div>
+
+            <div class="input-group mb-3">
+              <div class="input-group-prepend">
+                <span class="input-group-text"><a href="" data-toggle="tooltip" title="Know about pattern files">?</a></span>
               </div>
+              <div class="custom-file">
+                <input type="file" class="custom-file-input" id="pattInput" onchange="">
+                <label class="custom-file-label" for="pattInput" aria-describedby="modelInput">Update pattern file</label>
+              </div>
+            </div>
 
-              <input type="submit" value="Update model" onclick="return updateMarker();" />
+            <input type="submit" value="Update model" onclick="return updateMarker();" />
           </form>
         </div>
       </div>
     </div>
-  </div>
 
-  <a href="#" class="btn btn-primary btn-lg active" role="button" aria-pressed="true" onclick="return deleteModel();">Delete model</a>
+    <a href="#" class="btn btn-primary btn-lg active" role="button" aria-pressed="true"
+      onclick="return deleteModel();">Delete model</a>
+
+  </div>
 
   <script src="http://127.0.0.1:3000/storage/assets/js/three.js"></script>
   <script src="http://127.0.0.1:3000/storage/assets/js/GLTFLoader.js"></script>
@@ -80,7 +91,7 @@
     const HOST = 'http://127.0.0.1:3000';
     const modelId = '<%= threeDimObj.id %>';
     const MODELENDPOINT = `${HOST}/models/${modelId}`;
-    const MODELSLISTENDPOINT = "http://127.0.0.1:3000/admin/models";
+    const MODELSLISTENDPOINT = "http://127.0.0.1:3000/account/models";
 
     async function deleteModel() {
       event.preventDefault();
