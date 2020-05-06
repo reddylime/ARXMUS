@@ -1,12 +1,12 @@
 <html>
 
 <head>
-  <% include deps.html %>
+  <% include ../partials/deps.html %>
 </head>
 
 <body>
 
-  <% include navbar.html %>
+  <% include ../partials/navbar.html %>
 
   <p class="h1">New model</p>
 
@@ -81,7 +81,6 @@
 
     function updateFileName() {
       
-
       const urlSegs = event.currentTarget.value.split('\\');
       const newLabel = urlSegs[urlSegs.length - 1];
       console.log(newLabel);

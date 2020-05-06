@@ -4,7 +4,7 @@ const tdoController = require('../controller/3d-model');
 const {getCurUserMock} = require('../test/mocks/');
 
 const ar = new Router({
-  prefix: '/ar',
+  /* prefix: '/ar', */
 });
 
 ar.get('/:group', async (ctx) => {
