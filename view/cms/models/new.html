@@ -1,92 +1,167 @@
 <html>
 
 <head>
-  <% include deps.html %>
+  <% include ../partials/deps.html %>
 </head>
 
 <body>
 
-  <% include navbar.html %>
+  <% include ../partials/navbar.html %>
 
-  <p class="h1">New model</p>
+  <div class="container">
 
-  <form id="modelForm">
-
-    <div class="row p-2">
-      <div class="col-4">
-        <div class="input-group mb-3">
-          <div class="custom-file">
-            <input type="file" class="custom-file-input" id="modelInput" onchange="return updateFileName();">
-            <label class="custom-file-label" for="modelInput" aria-describedby="modelInput">Choose
-              model</label>
-          </div>
-        </div>
+    <div class="row">
+      <div class="col-6">
+        <p class="h1">New model</p>
+      </div>
+      <div class="col-6">
+        <h1>Marker Preview</h1>
       </div>
     </div>
 
-    <div class="row p-2">
-      <div class="col-4">
-        <div class="input-group mb-3">
-          <div class="custom-file">
-            <input type="file" class="custom-file-input" id="markerInput" onchange="return updateFileName();">
-            <label class="custom-file-label" for="markerInput" aria-describedby="markerInput">Choose
-              marker</label>
+    <div class="row">
+
+      <div class="col-6">
+
+        <form id="modelForm">
+
+          <div class="input-group mb-3">
+            <div class="custom-file">
+              <input type="file" class="custom-file-input" id="modelInput" onchange="return updateFileName();">
+              <label class="custom-file-label" for="modelInput" aria-describedby="modelInput">Choose
+                model</label>
+            </div>
           </div>
+
+          <div class="input-group mb-3">
+            <div class="custom-file">
+              <input type="file" class="custom-file-input" id="markerInput" onchange="return updateFileName();">
+              <label class="custom-file-label" for="markerInput" aria-describedby="markerInput">Choose
+                marker</label>
+            </div>
+          </div>
+
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="inputGroup-sizing-default">Name</span>
+            </div>
+            <input type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default"
+              id="nameInput">
+          </div>
+
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="inputGroup-sizing-default">Group</span>
+            </div>
+            <input type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default"
+              id="groupInput">
+          </div>
+
+          <input type="submit" value="Submit Model" onclick="return submitModel();" />
+
+      </div>
+
+      </form>
+
+      <div class="col-6">
+        <div id="imageContainer">
+          <p>Choose marker in order to preview it</p>
         </div>
       </div>
+
     </div>
 
-    <div class="row p-2">
-      <div class="col-4">
-        <div class="input-group mb-3">
-          <div class="custom-file">
-            <input type="file" class="custom-file-input" id="pattInput" onchange="return updateFileName();">
-            <label class="custom-file-label" for="pattInput" aria-describedby="markerInput" >Choose
-              pattern</label>
-          </div>
-        </div>
-      </div>
-    </div>
+    
 
-    <div class="row p-2">
-      <div class="col-4">
-        <div class="input-group mb-3">
-          <div class="input-group-prepend">
-            <span class="input-group-text" id="inputGroup-sizing-default">Name</span>
-          </div>
-          <input type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default"
-            id="nameInput">
-        </div>
-      </div>
-    </div>
+  </div>
+  </div>
 
-    <div class="row p-2">
-      <div class="col-4">
-        <div class="input-group mb-3">
-          <div class="input-group-prepend">
-            <span class="input-group-text" id="inputGroup-sizing-default">Group</span>
-          </div>
-          <input type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default"
-            id="groupInput">
-        </div>
-      </div>
-    </div>
-
-    <input type="submit" value="Submit Model" onclick="return submitModel();" />
-    </div>
-
-  </form>
+  <script src="http://127.0.0.1:3000/storage/assets/js/threex-arpatternfile.js"></script>
 
   <script>
 
+    let patternBlob;
+    let picBlob;
+
+    function makePattern() {
+      if (innerImageURL === null) {
+        alert('upload a file first')
+        return
+      }
+
+      THREEx.ArPatternFile.encodeImageURL(innerImageURL, function onComplete(patternFileString) {
+        patternBlob = new Blob([patternFileString], { type: 'text/plain' })
+        /* THREEx.ArPatternFile.triggerDownload(patternFileString, "pattern-" + (imageName || "marker") + ".patt") */
+      })
+    }
+
+    var innerImageURL = null
+
+    document.querySelector('#markerInput').addEventListener('change', function () {
+      var file = this.files[0];
+      imageName = file.name
+      // remove file extension
+      imageName = imageName.substring(0, imageName.lastIndexOf('.')) || imageName
+
+      // debugger
+
+      var reader = new FileReader();
+      reader.onload = function (event) {
+        innerImageURL = event.target.result
+        updateFullMarkerImage()
+      };
+      reader.readAsDataURL(file);
+    })
+
+    function updateFullMarkerImage() {
+      // get patternRatio
+
+      // ratio slider, deal with it later, for now let it be const 0.5
+      var patternRatio = /* document.querySelector('#patternRatioSlider').value */ 50 / 100
+
+      // same here with the size, let it be const 512 for now 
+      var imageSize = 512 /* document.querySelector('#imageSize').value */
+
+      // color - same, const black till oneday
+      var borderColor = 'black' /* document.querySelector('#borderColor').value */
+
+      function hexaColor(color) {
+        return /^#[0-9A-F]{6}$/i.test(color);
+      };
+
+      /* var s = new Option().style;
+      s.color = borderColor;
+      if (borderColor === '' || (s.color != borderColor && !hexaColor(borderColor))) {
+        // if color not valid, use black
+        borderColor = 'black';
+      } */
+
+      THREEx.ArPatternFile.buildFullMarker(innerImageURL, patternRatio, imageSize, borderColor, async function onComplete(markerUrl) {
+        let fullMarkerURL = markerUrl
+
+        var fullMarkerImage = document.createElement('img')
+        fullMarkerImage.style.width = "400";
+        fullMarkerImage.style.height = "400";
+        fullMarkerImage.src = fullMarkerURL;
+
+        picBlob = await fetch(fullMarkerURL);
+        picBlob = await picBlob.blob();
+        makePattern();
+
+        // put fullMarkerImage into #imageContainer
+        var container = document.querySelector('#imageContainer')
+        while (container.firstChild) container.removeChild(container.firstChild);
+        container.appendChild(fullMarkerImage)
+      })
+    }
+
     function updateFileName() {
-      
 
       const urlSegs = event.currentTarget.value.split('\\');
       const newLabel = urlSegs[urlSegs.length - 1];
       console.log(newLabel);
       event.currentTarget.labels[0].innerText = newLabel;
-      
+
     }
 
     const MODELPOSTENDPOINT = "http://127.0.0.1:3000/models";
@@ -98,8 +173,8 @@
 
       const formData = new FormData();
       formData.append('tdo', document.getElementById('modelInput').files[0]);
-      formData.append('marker', document.getElementById('markerInput').files[0]);
-      formData.append('patt', document.getElementById('pattInput').files[0]);
+      formData.append('marker', picBlob, name.split('.').slice(0, -1).join('.') + '.png');
+      formData.append('patt', patternBlob, name.split('.').slice(0, -1).join('.') + '-pattern.patt');
       formData.append("name", document.getElementById("nameInput").value);
       formData.append("group", document.getElementById("groupInput").value);
 
@@ -112,7 +187,7 @@
       try {
         const res = await fetch(MODELPOSTENDPOINT, requestOptions);
         console.log(res);
-      } catch(err) {
+      } catch (err) {
         console.error(err)
       }
 

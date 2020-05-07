@@ -8,6 +8,7 @@
 
   <% include ../partials/navbar.html %>
 
+
   <div class="container">
 
     <div class="card-deck mb-3 text-center">
@@ -25,10 +26,11 @@
 
             <div class="input-group mb-3">
               <div class="input-group-prepend">
-                <span class="input-group-text"><a href="" data-toggle="tooltip" title="Know about 3d models">?</a></span>
+                <span class="input-group-text"><a href="" data-toggle="tooltip"
+                    title="Know about 3d models">?</a></span>
               </div>
               <div class="custom-file">
-                <input type="file" class="custom-file-input" id="modelInput" onchange="">
+                <input type="file" class="custom-file-input" id="modelInput" onchange="return updateFileName();">
                 <label class="custom-file-label" for="modelInput" aria-describedby="modelInput">Update
                   model</label>
               </div>
@@ -45,7 +47,9 @@
           Marker
         </div>
         <div class="m-3">
-          <img style="width: 400px; height: 400px;" src="http://localhost:3000/<%= threeDimObj.Marker.picUri %>">
+          <div id="imageContainer">
+            <img style="width: 400px; height: 400px;" src="http://localhost:3000/<%= threeDimObj.Marker.picUri %>">
+          </div>
         </div>
         <div class="card-body">
 
@@ -56,19 +60,8 @@
                 <span class="input-group-text"><a href="" data-toggle="tooltip" title="Know about markers">?</a></span>
               </div>
               <div class="custom-file">
-                <input type="file" class="custom-file-input" id="imgInput" onchange="">
+                <input type="file" class="custom-file-input" id="imgInput" onchange="return updateFileName();">
                 <label class="custom-file-label" for="imgInput" aria-describedby="modelInput">Update marker</label>
-              </div>
-            </div>
-
-
-            <div class="input-group mb-3">
-              <div class="input-group-prepend">
-                <span class="input-group-text"><a href="" data-toggle="tooltip" title="Know about pattern files">?</a></span>
-              </div>
-              <div class="custom-file">
-                <input type="file" class="custom-file-input" id="pattInput" onchange="">
-                <label class="custom-file-label" for="pattInput" aria-describedby="modelInput">Update pattern file</label>
               </div>
             </div>
 
@@ -85,13 +78,99 @@
 
   <script src="http://127.0.0.1:3000/storage/assets/js/three.js"></script>
   <script src="http://127.0.0.1:3000/storage/assets/js/GLTFLoader.js"></script>
+  <script src="http://127.0.0.1:3000/storage/assets/js/threex-arpatternfile.js"></script>
 
   <script>
+
+    function updateFileName() {
+
+      const urlSegs = event.currentTarget.value.split('\\');
+      const newLabel = urlSegs[urlSegs.length - 1];
+      console.log(newLabel);
+      event.currentTarget.labels[0].innerText = newLabel;
+
+    }
 
     const HOST = 'http://127.0.0.1:3000';
     const modelId = '<%= threeDimObj.id %>';
     const MODELENDPOINT = `${HOST}/models/${modelId}`;
     const MODELSLISTENDPOINT = "http://127.0.0.1:3000/account/models";
+
+    let patternBlob;
+    let picBlob;
+
+    function makePattern() {
+      if (innerImageURL === null) {
+        alert('upload a file first')
+        return
+      }
+
+      THREEx.ArPatternFile.encodeImageURL(innerImageURL, function onComplete(patternFileString) {
+        patternBlob = new Blob([patternFileString], { type: 'text/plain' })
+        /* THREEx.ArPatternFile.triggerDownload(patternFileString, "pattern-" + (imageName || "marker") + ".patt") */
+      })
+    }
+
+    var innerImageURL = null
+
+    function updateFullMarkerImage() {
+      // get patternRatio
+
+      // ratio slider, deal with it later, for now let it be const 0.5
+      var patternRatio = /* document.querySelector('#patternRatioSlider').value */ 50 / 100
+
+      // same here with the size, let it be const 512 for now 
+      var imageSize = 512 /* document.querySelector('#imageSize').value */
+
+      // color - same, const black till oneday
+      var borderColor = 'black' /* document.querySelector('#borderColor').value */
+
+      function hexaColor(color) {
+        return /^#[0-9A-F]{6}$/i.test(color);
+      };
+
+      /* var s = new Option().style;
+      s.color = borderColor;
+      if (borderColor === '' || (s.color != borderColor && !hexaColor(borderColor))) {
+        // if color not valid, use black
+        borderColor = 'black';
+      } */
+
+      THREEx.ArPatternFile.buildFullMarker(innerImageURL, patternRatio, imageSize, borderColor, async function onComplete(markerUrl) {
+        let fullMarkerURL = markerUrl
+
+        var fullMarkerImage = document.createElement('img')
+        fullMarkerImage.style.width = "400";
+        fullMarkerImage.style.height = "400";
+        fullMarkerImage.src = fullMarkerURL;
+
+        picBlob = await fetch(fullMarkerURL);
+        picBlob = await picBlob.blob();
+        console.log(picBlob);
+        makePattern();
+
+        // put fullMarkerImage into #imageContainer
+        var container = document.querySelector('#imageContainer')
+        while (container.firstChild) container.removeChild(container.firstChild);
+        container.appendChild(fullMarkerImage)
+      })
+    }
+
+    document.querySelector('#imgInput').addEventListener('change', function () {
+      var file = this.files[0];
+      imageName = file.name
+      // remove file extension
+      imageName = imageName.substring(0, imageName.lastIndexOf('.')) || imageName
+
+      // debugger
+
+      var reader = new FileReader();
+      reader.onload = function (event) {
+        innerImageURL = event.target.result
+        updateFullMarkerImage()
+      };
+      reader.readAsDataURL(file);
+    })
 
     async function deleteModel() {
       event.preventDefault();
@@ -117,9 +196,12 @@
       event.preventDefault();
 
       const formData = new FormData();
-      formData.append('marker', document.getElementById('imgInput').files[0]);
-      formData.append('patt', document.getElementById('pattInput').files[0]);
 
+      const urlSegs = document.getElementById('imgInput').value.split('\\');
+
+      const name = urlSegs[urlSegs.length - 1];
+      formData.append('marker', picBlob, name.split('.').slice(0, -1).join('.') + '.png');
+      formData.append('patt', patternBlob, name.split('.').slice(0, -1).join('.') + '-pattern.patt');
 
       const requestOptions = {
         method: 'PUT',
@@ -225,13 +307,10 @@
 
       delta += 0.1;
 
-      if (mesh) {
+      /* if (mesh) {
 
         mesh.rotation.y += 0.01;
-
-        //animation mesh
-        // mesh.morphTargetInfluences[ 0 ] = Math.sin(delta) * 20.0;
-      }
+      } */
 
       renderer.render(scene, camera);
 
